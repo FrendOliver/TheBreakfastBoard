@@ -1,3 +1,4 @@
+// Where we put inputs
 import {
   Badge,
   Box,
@@ -10,38 +11,56 @@ import {
   VStack,
 } from "@chakra-ui/react";
 
-const tweets = [
-  {
-    name: "Maya Johnson",
-    username: "@maya_codes",
-    time: "2m",
-    text: "Just got my first React page running. Components are starting to make sense.",
-    likes: 14,
-    replies: 3,
-    tag: "Web Dev",
-  },
-  {
-    name: "Ethan Brooks",
-    username: "@ethanbuilds",
-    time: "12m",
-    text: "Hardcoding data first helps me focus on the page layout before adding real input.",
-    likes: 22,
-    replies: 5,
-    tag: "React",
-  },
-  {
-    name: "Ava Smith",
-    username: "@ava_secure",
-    time: "25m",
-    text: "A .map() lets us turn an array of data into repeated cards on the screen.",
-    likes: 31,
-    replies: 8,
-    tag: "Cyber 301",
-  },
-];
+import tweetsData from "./data/tweets.json"
+import type { Tweet } from "./types/Tweet"
+import { useState } from "react";
 
 function App() {
-  //this part is javascript code
+  // Tweets is the current list of tweets shown
+  // set tweets is how React updates all instances
+  // We are starting with tweets from json file
+  const [tweets, setTweets] = useState<Tweet[]>(tweetsData as Tweet[])
+
+  // input is what is typed in the box, set Input is how we update it
+  const [input, setInput] = useState("");
+
+  // function to run when user clicks yap Button
+  const handleYapClick = () => {
+    // if input is empty or white space, end function
+    if(!input.trim()) return;
+    const newTweet: Tweet = {
+      id: Date.now(),
+      name: "Frend",
+      username: "@you",
+      createdAt: new Date().toISOString(),
+      text: input.trim(),
+      likes: 1,
+      replies: 0,
+      tag: ""
+    };
+    // Puts new tweet first, then copy in old tweets
+    setTweets([newTweet, ...tweets])
+    // clear input box after posting
+    setInput("")
+  }
+
+  // Save the current time once during this render.
+  const currentTime = new Date().toISOString();
+
+  // Helper function that turns a date into "now", "2m", "3h", or "2d".
+  const timeAgo = (iso?: string) => {
+    if (!iso) return "now";
+    const diff = new Date(currentTime).getTime() - new Date(iso).getTime();
+    const sec = Math.floor(diff / 1000);
+    if (sec < 60) return "now";
+    const min = Math.floor(sec / 60);
+    if (min < 60) return `${min}m`;
+    const hr = Math.floor(min / 60);
+    if (hr < 24) return `${hr}h`;
+    const day = Math.floor(hr / 24);
+    return `${day}d`;
+  };
+
 
   return (
     <Box bg="gray.900" minH="100vh" py={8}>
@@ -66,12 +85,17 @@ function App() {
                 bg="gray.700"
                 borderColor="gray.600"
                 color="white"
+                value = {input}
+                onChange = {(userInput) => setInput(userInput.target.value)}
               />
-              <Button alignSelf="flex-end" bg="blue.500" color="white">
+              <Button alignSelf="flex-end" bg="blue.500" color="white"
+              onClick = {handleYapClick}
+              >
                 Yap
               </Button>
             </VStack>
           </Box>
+
           {tweets.map((tweet) => (
             <Box
               key={tweet.username}
@@ -92,7 +116,7 @@ function App() {
                       <Badge colorPalette="blue">{tweet.tag}</Badge>
                     </HStack>
                     <Text color="gray.400" fontSize="sm">
-                      {tweet.username} · {tweet.time}
+                      {tweet.username} · {timeAgo(tweet.createdAt)}
                     </Text>
                   </Box>
                 </HStack>
